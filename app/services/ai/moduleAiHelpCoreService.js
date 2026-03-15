@@ -420,13 +420,14 @@ export const createModuleAiHelpService = ({ moduleKey, moduleLabel = 'modulo', e
 
   const readAgentExcerpt = async () => {
     const { llm } = getAiHelpConfig();
+    const explicitExcerpt = clampText(process.env[`${envPrefix}_AGENT_EXCERPT`], llm.maxAgentContextChars);
+    if (explicitExcerpt) return explicitExcerpt;
     if (!agentMdPath) return '';
-    try {
-      const raw = await fs.readFile(agentMdPath, 'utf8');
-      return raw.slice(0, llm.maxAgentContextChars);
-    } catch {
-      return '';
-    }
+
+    const normalizedAgentPath = String(agentMdPath).trim();
+    if (!normalizedAgentPath) return '';
+    const safeAgentName = path.basename(normalizedAgentPath);
+    return clampText(`Considere as orientacoes locais do arquivo ${safeAgentName}.`, llm.maxAgentContextChars);
   };
 
   const summarizeConfigForPrompt = () => {

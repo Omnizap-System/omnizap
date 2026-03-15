@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable no-useless-escape */
 
 /**
@@ -2058,7 +2057,7 @@ export async function upsert(tableName, data) {
  * @param {(connection: import('mysql2/promise').PoolConnection) => Promise<any>} callback
  * @returns {Promise<any>}
  */
-async function withTransaction(callback) {
+export async function withTransaction(callback) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();

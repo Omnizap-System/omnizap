@@ -765,7 +765,10 @@ const parseJsonOutput = (stdout) => {
   try {
     return JSON.parse(text);
   } catch {
-    const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const lines = text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
     for (let index = lines.length - 1; index >= 0; index -= 1) {
       const line = lines[index];
       if (!line.startsWith('{') && !line.startsWith('[')) continue;
@@ -809,12 +812,7 @@ const extractYtDlpEntry = (payload) => {
 const normalizeResolvedVideoInfo = (entry, fallbackUrl = null) => {
   if (!entry || typeof entry !== 'object') return null;
 
-  const resolvedUrl =
-    normalizeYoutubeWatchUrl(entry.webpage_url) ||
-    normalizeYoutubeWatchUrl(entry.original_url) ||
-    normalizeYoutubeWatchUrl(entry.url) ||
-    normalizeYoutubeWatchUrl(entry.id) ||
-    normalizeYoutubeWatchUrl(fallbackUrl);
+  const resolvedUrl = normalizeYoutubeWatchUrl(entry.webpage_url) || normalizeYoutubeWatchUrl(entry.original_url) || normalizeYoutubeWatchUrl(entry.url) || normalizeYoutubeWatchUrl(entry.id) || normalizeYoutubeWatchUrl(fallbackUrl);
 
   return {
     ...entry,
@@ -930,9 +928,7 @@ const fetchSearchResult = async (query) => {
 
   const payload = await retryAsync(
     async () => {
-      const args = isUrlLookup
-        ? [...buildYtDlpArgsBase(), '--dump-single-json', lookup]
-        : [...buildYtDlpArgsBase(), '--flat-playlist', '--ignore-errors', '--dump-single-json', lookup];
+      const args = isUrlLookup ? [...buildYtDlpArgsBase(), '--dump-single-json', lookup] : [...buildYtDlpArgsBase(), '--flat-playlist', '--ignore-errors', '--dump-single-json', lookup];
 
       const { stdout } = await runYtDlp({
         args,
@@ -1436,10 +1432,13 @@ const processPlayRequest = async ({ sock, remoteJid, messageInfo, expirationMess
     }
 
     if (!downloadResult) {
-      throw lastDownloadError || createError(ERROR_CODES.API, 'Falha ao baixar o arquivo localmente.', {
-        endpoint: YTDLS_ENDPOINTS.download,
-        requestId,
-      });
+      throw (
+        lastDownloadError ||
+        createError(ERROR_CODES.API, 'Falha ao baixar o arquivo localmente.', {
+          endpoint: YTDLS_ENDPOINTS.download,
+          requestId,
+        })
+      );
     }
 
     filePath = downloadResult.filePath;

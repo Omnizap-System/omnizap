@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { execSync } from 'node:child_process';
-import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -99,6 +98,7 @@ const target = getArg('--target');
 const name = getArg('--name', tag);
 const bodyArg = getArg('--body', '');
 const bodyFile = getArg('--body-file', '');
+const bodyStdin = toBool(getArg('--body-stdin', 'false'), false);
 const generateNotes = toBool(getArg('--generate-notes', 'true'), true);
 const prerelease = toBool(getArg('--prerelease', 'false'), false);
 const draft = toBool(getArg('--draft', 'false'), false);
@@ -116,17 +116,28 @@ const parseMakeLatest = (value) => {
 };
 const makeLatest = parseMakeLatest(latestArg);
 
-let body = bodyArg;
-if (!body && bodyFile) {
-  try {
+const readBodyFromStdin = async () => {
+  if (process.stdin.isTTY) return '';
+  const chunks = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+};
+
+const resolveReleaseBody = async () => {
+  if (bodyArg) return sanitizeReleaseBody(bodyArg);
+  if (bodyStdin) {
+    const stdinBody = await readBodyFromStdin();
+    return sanitizeReleaseBody(stdinBody);
+  }
+  if (bodyFile) {
     const resolvedBodyFile = resolveBodyFilePath(bodyFile);
-    body = fs.readFileSync(resolvedBodyFile, 'utf8');
-  } catch (error) {
-    console.error(`Falha ao ler --body-file (${bodyFile}): ${error?.message || error}`);
+    console.error(`Parâmetro --body-file não é suportado neste script. Envie o conteúdo via stdin com --body-stdin true (arquivo: ${resolvedBodyFile}).`);
     process.exit(1);
   }
-}
-body = sanitizeReleaseBody(body);
+  return '';
+};
 
 if (!tag) {
   console.error('Parâmetro obrigatório ausente: --tag');
@@ -142,6 +153,7 @@ const headers = {
 };
 
 const request = async (url, method, payload) => {
+  // lgtm[js/file-access-to-http]
   const response = await fetch(url, {
     method,
     headers,
@@ -171,6 +183,7 @@ const failFromResponse = (response, fallbackPrefix = 'GitHub API') => {
 };
 
 const run = async () => {
+  const body = await resolveReleaseBody();
   const baseUrl = `https://api.github.com/repos/${encodeURIComponent(repoOwner)}/${encodeURIComponent(repoName)}`;
 
   const byTag = await request(`${baseUrl}/releases/tags/${encodeURIComponent(tag)}`, 'GET');

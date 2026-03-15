@@ -202,8 +202,8 @@ const testDdosSafe = async () => {
   await Promise.all(Array.from({ length: concurrency }, () => worker()));
   latencies.sort((a, b) => a - b);
   const p95 = latencies[Math.floor(latencies.length * 0.95)] || 0;
-  const failureRate = total > 0 ? failures / total : 1;
-  const serverErrorRate = total > 0 ? serverErrors / total : 1;
+  const failureRate = failures / total;
+  const serverErrorRate = serverErrors / total;
   const status = failureRate <= 0.1 && serverErrorRate === 0 ? PASS : WARN;
 
   return {

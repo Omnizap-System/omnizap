@@ -26,4 +26,3 @@ export const installYtDlpBinary = async ({ binaryPath = DEFAULT_YTDLP_BINARY_PAT
 
   return targetPath;
 };
-

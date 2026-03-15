@@ -202,9 +202,7 @@ const isUnknownColumnError = (error, columnName = '') => {
   if (code !== 'ER_BAD_FIELD_ERROR' && errno !== 1054) return false;
   if (!columnName) return true;
   const message = String(error?.message || '').toLowerCase();
-  const normalizedColumn = String(columnName || '')
-    .trim()
-    .toLowerCase();
+  const normalizedColumn = String(columnName).trim().toLowerCase();
   if (!normalizedColumn) return true;
   return message.includes(`unknown column '${normalizedColumn}'`) || message.includes(`unknown column \`${normalizedColumn}\``);
 };

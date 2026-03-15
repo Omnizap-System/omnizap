@@ -546,11 +546,11 @@ if [ "$RELEASE_GITHUB_RELEASE" = "1" ]; then
         --tag "$release_tag" \
         --target "$local_target" \
         --name "$local_name" \
-        --body-file "$release_body_file" \
         --generate-notes "$generate_notes_bool" \
         --prerelease "$prerelease_bool" \
         --draft "$draft_bool" \
-        --latest "$latest_bool"
+        --latest "$latest_bool" \
+        --body-stdin "true" < "$release_body_file"
     )"
   else
     release_output="$(

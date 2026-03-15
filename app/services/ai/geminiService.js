@@ -82,6 +82,7 @@ export const createGeminiTextService = ({ apiKey = process.env.GEMINI_API_KEY, d
       : null;
 
     try {
+      // lgtm[js/file-access-to-http]
       const response = await globalThis.fetch(endpoint, {
         method: 'POST',
         headers: {
